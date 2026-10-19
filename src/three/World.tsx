@@ -1,8 +1,9 @@
 import { Environment, Lightformer, MeshReflectorMaterial } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { Bloom, DepthOfField, EffectComposer, SMAA, Vignette } from "@react-three/postprocessing";
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import { Easing, interpolate, random, useCurrentFrame, useVideoConfig } from "remotion";
+import type { DepthOfFieldEffect } from "postprocessing";
 import * as THREE from "three";
 import { BEATS, COLORS, SCENES, sceneAt } from "../timeline";
 import { Buildings } from "./Buildings";
@@ -68,6 +69,13 @@ export const cameraPose = (t: number): Pose => {
     return mix(scenePose(prev, t), scenePose(cur, t), ease(interpolate(t, [start - TRANS / 2, start + TRANS / 2], [0, 1], clamp)));
   }
   return scenePose(cur, t);
+};
+
+const FocusUpdater: React.FC<{ dofRef: React.RefObject<DepthOfFieldEffect>; x: number; y: number }> = ({ dofRef, x, y }) => {
+  useLayoutEffect(() => {
+    dofRef.current?.target?.set(x, y, 0);
+  });
+  return null;
 };
 
 // frameloop="never": render exactly once per video frame, after all scene updates are committed.
@@ -223,6 +231,20 @@ export const World: React.FC<{ effects?: boolean }> = ({ effects = true }) => {
   const t = useT();
   const pose = cameraPose(t);
   const focusX = pose.lookX;
+  // Built once: EffectComposer recreates its passes whenever its children change,
+  // which would compile new shaders every frame and exhaust the WebGL context.
+  const dofRef = useRef<DepthOfFieldEffect>(null);
+  const post = useMemo(
+    () => (
+      <EffectComposer multisampling={0}>
+        <DepthOfField ref={dofRef} target={[0, 1.2, 0]} focalLength={0.045} bokehScale={7} height={960} />
+        <Bloom intensity={0.7} luminanceThreshold={0.85} luminanceSmoothing={0.2} mipmapBlur />
+        <Vignette offset={0.35} darkness={0.35} />
+        <SMAA />
+      </EffectComposer>
+    ),
+    [],
+  );
   return (
     <>
       <color attach="background" args={[BG]} />
@@ -277,14 +299,8 @@ export const World: React.FC<{ effects?: boolean }> = ({ effects = true }) => {
       <Giveaway t={t} />
       <Cta t={t} />
 
-      {effects && (
-        <EffectComposer multisampling={0}>
-          <DepthOfField target={[focusX, pose.lookY, 0]} focalLength={0.045} bokehScale={7} height={960} />
-          <Bloom intensity={0.7} luminanceThreshold={0.85} luminanceSmoothing={0.2} mipmapBlur />
-          <Vignette offset={0.35} darkness={0.35} />
-          <SMAA />
-        </EffectComposer>
-      )}
+      {effects && post}
+      <FocusUpdater dofRef={dofRef} x={focusX} y={pose.lookY} />
       <Renderer />
     </>
   );

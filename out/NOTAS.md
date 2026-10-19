@@ -19,4 +19,4 @@ a ~15 % del volumen de la voz, con ducking mientras habla (la voz suena entre 0,
 npm install
 npx remotion render src/index.ts Reel out/video_final.mp4 --codec=h264 --audio-codec=aac --gl=angle --concurrency=3
 ```
-El usuario del CTA está en `src/ui/TitleCard.tsx` (`USERNAME`) y los tiempos en `src/timeline.ts`.
+El usuario del CTA está en `src/ui/TitleCard.tsx` (`USERNAME`, hoy `@_castelbru`) y los tiempos en `src/timeline.ts`.

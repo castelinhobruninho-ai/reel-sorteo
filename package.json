@@ -1,0 +1,25 @@
+{
+  "name": "reel-sorteo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render Reel out/video_final.mp4 --codec=h264 --audio-codec=aac"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.117.0",
+    "@react-three/fiber": "^8.17.10",
+    "@react-three/postprocessing": "^2.16.3",
+    "@remotion/cli": "^4.0.300",
+    "@remotion/google-fonts": "^4.0.300",
+    "@remotion/three": "^4.0.300",
+    "@types/react": "^18.3.12",
+    "@types/three": "^0.170.0",
+    "postprocessing": "^6.36.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.300",
+    "three": "^0.170.0",
+    "typescript": "^5.6.3"
+  }
+}
